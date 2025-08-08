@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    change-log: classpath:db/changelog/master.xml
+    default-schema: public
+
+  jpa:
+    hibernate:
+      ddl-auto: none
