@@ -5,7 +5,7 @@ import org.AlanTitor.Entity.Wallet;
 import org.AlanTitor.Enum.OperationType;
 import org.AlanTitor.Main;
 import org.AlanTitor.Repository.WalletRepository;
-import org.AlanTitor.Service.WalletService;
+import org.AlanTitor.Service.WalletCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class WalletConcurrencyTest {
     @Autowired
     WalletRepository repository;
     @Autowired
-    WalletService service;
+    WalletCommandService commandService;
 
     UUID id;
 
@@ -44,7 +44,7 @@ public class WalletConcurrencyTest {
 
     @Test
     public void testConcurrency() throws InterruptedException {
-        int threads = 30;
+        int threads = 1000;
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         CountDownLatch latch = new CountDownLatch(threads);
 
@@ -55,7 +55,7 @@ public class WalletConcurrencyTest {
                     dto.setId(id);
                     dto.setOperation(OperationType.DEPOSIT);
                     dto.setAmount(new BigDecimal(10));
-                    service.updateWallet(dto);
+                    commandService.updateWallet(dto);
                 }finally {
                     latch.countDown();
                 }
@@ -65,6 +65,6 @@ public class WalletConcurrencyTest {
         executor.shutdown();
 
         Wallet updatedWallet = repository.findById(id).orElseThrow();
-        assertEquals(new BigDecimal("1300.00"), updatedWallet.getAmount());
+        assertEquals(new BigDecimal("11000.00"), updatedWallet.getAmount());
     }
 }

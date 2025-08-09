@@ -4,8 +4,8 @@ import org.AlanTitor.Controller.WalletController;
 import org.AlanTitor.Entity.Wallet;
 import org.AlanTitor.Exception.GlobalExceptionHandler;
 import org.AlanTitor.Exception.WalletNotFoundException;
-import org.AlanTitor.Repository.WalletRepository;
-import org.AlanTitor.Service.WalletService;
+import org.AlanTitor.Service.WalletCommandService;
+import org.AlanTitor.Service.WalletQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,9 @@ public class WalletControllerTest {
     MockMvc mvc;
 
     @Mock
-    WalletService service;
+    WalletQueryService queryService;
+    @Mock
+    WalletCommandService commandService;
 
     @InjectMocks
     WalletController controller;
@@ -61,6 +63,8 @@ public class WalletControllerTest {
 
     @Test
     public void testEndpointUpdateWallet_ShouldReturnOk() throws Exception {
+        when(commandService.updateWallet(any())).thenReturn(wallet.getAmount());
+
         String json = String.format("{ \"id\": \"%s\", \"operation\": \"DEPOSIT\", \"amount\": 23}", id.toString());
 
         mvc.perform(post("/api/v1/wallet")
@@ -91,7 +95,7 @@ public class WalletControllerTest {
 
     @Test
     public void testEndpointGetWallet_ShouldReturnNotFound() throws Exception {
-        when(service.getWallet(any(UUID.class))).thenThrow(new WalletNotFoundException());
+        when(queryService.getWallet(any(UUID.class))).thenThrow(new WalletNotFoundException());
         mvc.perform(get("/api/v1/wallets/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
     }
 

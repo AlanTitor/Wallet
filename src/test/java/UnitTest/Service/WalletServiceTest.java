@@ -5,7 +5,11 @@ import org.AlanTitor.Entity.Wallet;
 import org.AlanTitor.Enum.OperationType;
 import org.AlanTitor.Exception.WalletNotFoundException;
 import org.AlanTitor.Repository.WalletRepository;
-import org.AlanTitor.Service.WalletService;
+import org.AlanTitor.Service.WalletCommandService;
+import org.AlanTitor.Service.WalletOperation.DepositOperation;
+import org.AlanTitor.Service.WalletOperation.WalletOperationFactory;
+import org.AlanTitor.Service.WalletOperation.WithdrawOperation;
+import org.AlanTitor.Service.WalletQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +32,14 @@ public class WalletServiceTest {
     @Mock
     WalletRepository walletRepository;
 
+    @Mock
+    WalletOperationFactory factory;
+
     @InjectMocks
-    WalletService walletService;
+    WalletCommandService commandService;
+
+    @InjectMocks
+    WalletQueryService queryService;
 
     UUID id;
     Wallet wallet;
@@ -56,8 +66,9 @@ public class WalletServiceTest {
 
         when(walletRepository.findById(id)).thenReturn(Optional.of(wallet));
         when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(factory.get(OperationType.DEPOSIT)).thenReturn(new DepositOperation());
 
-        walletService.updateWallet(request);
+        commandService.updateWallet(request);
 
         assertEquals(new BigDecimal("150.00"), wallet.getAmount());
 
@@ -75,8 +86,9 @@ public class WalletServiceTest {
 
         when(walletRepository.findById(id)).thenReturn(Optional.of(wallet));
         when(walletRepository.save(wallet)).thenAnswer(invocation -> invocation.getArgument(0));
+        when(factory.get(OperationType.WITHDRAW)).thenReturn(new WithdrawOperation());
 
-        walletService.updateWallet(request);
+        commandService.updateWallet(request);
 
         assertEquals(new BigDecimal("50.00"), wallet.getAmount());
 
@@ -88,6 +100,6 @@ public class WalletServiceTest {
     public void testShouldThrowException_WhenWalletNotFound(){
         when(walletRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(WalletNotFoundException.class, () -> walletService.getWallet(id));
+        assertThrows(WalletNotFoundException.class, () -> queryService.getWallet(id));
     }
 }
