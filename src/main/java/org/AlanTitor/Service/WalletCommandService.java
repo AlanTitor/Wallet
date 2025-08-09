@@ -25,7 +25,7 @@ public class WalletCommandService {
 
     @Retryable(
             retryFor = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class},
-            maxAttempts = 500,
+            maxAttempts = 50,
             backoff = @Backoff(delay = 50)
     )
     @Transactional

@@ -4,7 +4,6 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.retry.annotation.Recover;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,13 +25,13 @@ public class GlobalExceptionHandler {
     // Кошелек с ID не найден
     @ExceptionHandler(WalletNotFoundException.class)
     public ResponseEntity<Map<String, String>> onNotFound(WalletNotFoundException exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Error", "Wallet with that id doesn't exist!"));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Error!", "Wallet with that id doesn't exist!"));
     }
 
     // Ошибка в JSON теле
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> onNotReadableJson(HttpMessageNotReadableException exception){
-        return ResponseEntity.badRequest().body(Map.of("Error", "Can't parse JSON!"));
+        return ResponseEntity.badRequest().body(Map.of("Error!", "Can't parse JSON!"));
     }
 
     // Ошибка в значении тела JSON (ошибка валидации)
@@ -52,12 +51,12 @@ public class GlobalExceptionHandler {
         String paramName = ex.getName();
         String requiredType = ex.getRequiredType().getSimpleName();
         String message = String.format("Path param '%s' must be '%s'.", paramName, requiredType);
-        Map<String, String> error = Map.of("error", message);
+        Map<String, String> error = Map.of("Error!", message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     // Ошибка при большом колличестве запросов
-    @Recover
+    @ExceptionHandler(ConcurrencyFailureException.class)
     public BigDecimal recoverOptimisticLock() {
         throw new ConcurrencyFailureException("Couldn't update sum after some tries!");
     }
